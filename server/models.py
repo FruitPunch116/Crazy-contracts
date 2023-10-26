@@ -36,3 +36,10 @@ class Contractor ( db.Model ) :
     specialty = db.Column (db.String)
     skills = db.Column (db.String, nullable = False)
     age = db.Column (db.Integer, nullable = False)
+
+#-----  Reviews  -----#
+class Review ( db.Model ) :
+    __tablename__ = "reviews"
+    id
+    stars = db.Column (db.Integer, nullable = False)
+    text = db.Column (db.String, nullable = False)
