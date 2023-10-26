@@ -24,4 +24,15 @@ class User ( db.Model ) :
     last_name = db.Column (db.String, nullable = False)
     e_mail = db.Column (db.String, nullable = False)
     password = db.Column (db.String, nullable = False)
+    zip_code = db.Column (db.Integer, nullable = False)
 
+#-----  Contractors  -----#
+class Contractor ( db.Model ) :
+    __tablename__ = "contractors"
+    id
+    company_name = db.Column (db.String, nullable = False)
+    address = db.Column (db.String)
+    secondary_address = db.Column (db.String)
+    specialty = db.Column (db.String)
+    skills = db.Column (db.String, nullable = False)
+    age = db.Column (db.Integer, nullable = False)
