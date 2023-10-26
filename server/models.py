@@ -12,3 +12,16 @@ metadata = Metadata ( naming_convention = {
 })
 
 db = SQLAlchemy(metadata = metadata)
+
+
+id = db.Column (db.Integer, primary_key = True)
+
+#-----  Users  -----#
+class User ( db.Model ) :
+    __tablename__ = "users"
+    id
+    name = db.Column (db.String, nullable = False)
+    last_name = db.Column (db.String, nullable = False)
+    e_mail = db.Column (db.String, nullable = False)
+    password = db.Column (db.String, nullable = False)
+
