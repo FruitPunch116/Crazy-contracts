@@ -43,3 +43,20 @@ class Review ( db.Model ) :
     id
     stars = db.Column (db.Integer, nullable = False)
     text = db.Column (db.String, nullable = False)
+
+#-----  Likes  -----#
+class Like ( db.Model ) :
+    __tablename__ = "likes"
+    id
+    user_id = db.Column ()
+    post_id = db.Column ()
+
+#-----  Comments  -----#
+class Comment ( db.Model ) :
+    __tablename__ = "comments"
+    id
+    comment_id = db.Column ()
+    post_id = db.Column ()
+    user_id = db.Column ()
+    
+#-----    -----#
