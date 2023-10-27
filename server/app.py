@@ -15,6 +15,10 @@ app.json.compact = False
 
 migrate = Migrate (app, db)
 
+@app.route("/")
+def index ():
+    return "<h1>Welcome to the contractors favorite website</h1>"
+
 db.init_app(app)
 
 if __name__ == ("__main__"):
