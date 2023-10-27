@@ -48,19 +48,30 @@ class Review ( db.Model ) :
     user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
     contractor_id = db.Column (db.Integer, db.ForeignKey ("contractors.id"))
 
+#-----  Posts  -----#
+class Post ( db.Model ) :
+    __tablename__ = "posts"
+    id = db.Column (db.Integer, primary_key = True)
+    image = db.Column (db.Blob, nullable = False)
+
+    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
+
 #-----  Likes  -----#
-"""class Like ( db.Model ) :
+class Like ( db.Model ) :
     __tablename__ = "likes"
     id = db.Column (db.Integer, primary_key = True)
-    user_id = db.Column ()
-    post_id = db.Column ()"""
+
+    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
+    post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
 
 #-----  Comments  -----#
-"""class Comment ( db.Model ) :
+class Comment ( db.Model ) :
     __tablename__ = "comments"
     id = db.Column (db.Integer, primary_key = True)
-    comment_id = db.Column ()
-    post_id = db.Column ()
-    user_id = db.Column ()"""
+    body = db.Column (db.String)
+    
+    post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
+    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
+
 
 #-----    -----#
