@@ -30,7 +30,13 @@ class User ( db.Model ) :
     contractor = db.relationship ("Contractor", back_populates = "user")
     # Establish many-to-many relationship with the review table
     reviews_transmitted = db.relationship ("Review", back_populates = "transmitter")
-    reviews_received = db.relationship ("Review", back_populates =  "receptor")
+    reviews_received = db.relationship ("Review", back_populates = "receptor")
+    # Establish one-to-many relationship with the post table
+    posts = db.relationship ("Post", back_populates = "user")
+
+    comments = db.relationship ("Comment", back_populates = "user")
+    # 
+    saved_post = db.relationship ("Saved_Post", back_populates = "user")
 
     # Create the association between the reviews and the contractors thru users 
     reviews_transmitted_text = association_proxy ("reviews_transmitted", "text")
@@ -54,6 +60,8 @@ class Contractor ( db.Model ) :
     user_id = db.Column (db.Integer, db.ForeignKey ("users.id"), unique = True)
     # Establish one-to-one relationship with the users table
     user = db.relationship ("User", back_populates = "contractor")
+
+    post = db.relationship ("Post", back_populates = "contractor")
 
 #-----  Reviews  -----#
 class Review ( db.Model ) :
@@ -79,6 +87,28 @@ class Post ( db.Model ) :
     # image = db.Column (db.Blob, nullable = False)
 
     user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
+    contractor_id = db.Column (db.Integer, db.ForeignKey ("contractors.id"))
+    comment_id = db.Column (db.Integer, db.ForeignKey ("comments.id"))
+    likes_id = db.Column (db.Integer, db.ForeignKey ("likes.id"))
+    
+    # Establish many-to-one relationship with the user table
+    user = db.relationship ("User", back_populates = "posts")
+    # Establish relationship with the contractor table
+    contractor = db.relationship ("Contractor", back_populates = "post")
+    # Establish relationship with the comment table
+    comments = db.relationship ("Comment", back_populates = "post")
+    # Establish relationship with the like table
+    likes =  db.relationship ("Like", back_populates = "post")
+    # Establish relationship with the saved table
+    saved_post = db.relationship ("Saved_Post", back_populates = "posts")
+
+    #
+    user_name = association_proxy ("user", "name")
+    # 
+    contractor_company_name = association_proxy ("contractor", "company_name")
+    # 
+    comment_text = association_proxy ("comment", "text")
+
 
 #-----  Likes  -----#
 class Like ( db.Model ) :
@@ -89,6 +119,9 @@ class Like ( db.Model ) :
 
     user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
     post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
+
+    user = db.relationship ("User", back_populates = "likes")
+    post = db.relationship ("Post", back_populates = "likes")
 
 #-----  Comments  -----#
 class Comment ( db.Model ) :
@@ -101,5 +134,18 @@ class Comment ( db.Model ) :
     post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
     user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
 
+    user = db.relationship ("User", back_populates = "comments")
+    post = db.relationship ("Post", back_populates = "comments")
 
-#-----    -----#
+#-----  Saved  -----#
+class Saved_Post ( db.Model ) :
+    # Gives the table a name
+    __tablename__ = "saved"
+    # Create table columns
+    id = db.Column (db.Integer, primary_key = True, unique = True)
+
+    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
+    post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
+
+    user = db.relationship ("User", back_populates = "saved_post")
+    posts = db.relationship ("Post", back_populates = "saved_post")
