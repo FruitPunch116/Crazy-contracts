@@ -91,15 +91,12 @@ def create_user ():
     print(data)
     return new_user.to_dict(), 201
 
-@app.delete(URL_PREFIX + '/users/<int:id>')
+@app.delete(URL_PREFIX + "/users/<int:id>")
 def delete_user (id):
-    try:
-        user = User.query.filter(User.id == id).first()
-        db.session.delete(user)
-        db.commit()
-        return {}, 204
-    except:
-        return ({"error": "User not found"}), 404
+    user = User.query.filter(User.id == id).first()
+    db.session.delete(user)
+    db.session.commit()
+    return {}, 204    
     
 @app.patch(URL_PREFIX + "/user-edit/<int:id>")
 def edit_user(id):
