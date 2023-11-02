@@ -19,9 +19,27 @@ db.init_app(app)
 
 URL_PREFIX = "/api/v1/admin"
 
-@app.route("/")
+@app.route(URL_PREFIX + "/")
 def index ():
-    return "<h1>Welcome to the contractors favorite website</h1>"
+    page = f"""
+    <h1>Welcome to the contractors favorite's website API.</h1>
+    <p>Here you can find the routes for the different path of the <strong>Application Programming Interface</strong> 
+    or known as well as <strong>API</strong>.\nIn order to navigate the API the main <strong>URL</strong> you will need is going to depend.
+    \nIf your site still in development mode the require URL is going to be <strong>localhost</strong> plus the application site port number.
+    \nFor example the one  we are using on this project is: <strong>http://localhost:8001{URL_PREFIX}</strong> or <strong>http://127.0.0.1:8001{URL_PREFIX}</strong>.\n
+    Those numbers are referencing to the localhost URL.</p>\n<p>In case the website's backend is deployed you can go directly to the specific website</p>
+    <br>
+    <h1>Here are some of the endpoints that you can use to get information from the different routes</h1>
+    <h2>Getting the users overall info:</h2>
+    <h3>http://localhost:8001{URL_PREFIX}/users</h3>
+    <h2>Getting a specific  information:</h2>
+    <h3>http://localhost:8001/{URL_PREFIX}/users/<int></h3>
+    <h2>Getting the contractors overall info:</h2>
+    <h3>http://localhost:8001{URL_PREFIX}/contractors/info</h3>
+    <h2>Getting a specific contractor information:</h2>
+    <h3>http://localhost:8001/{URL_PREFIX}/contractors/info/<int></h3>
+    """
+    return page
 
 @app.get(URL_PREFIX + "/users")
 def get_users ():
