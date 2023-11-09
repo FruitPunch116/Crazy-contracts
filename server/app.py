@@ -118,7 +118,7 @@ def edit_user(id):
     db.session.add(user)
     db.session.commit()
     
-    return user.to_dict(),200
+    return user.to_dict(),204
 
 #  -- Contractors section -- #
 
@@ -132,7 +132,7 @@ def get_contractors ():
 @app.get(URL_PREFIX + "/contractor/info/<int:id>")
 def get_contractor_id (id):
     try:
-        contractor = Contractor.query.filter(Contractor.id == id)
+        contractor = Contractor.query.filter(Contractor.id == id).first()
         return jsonify(contractor.to_dict()), 200
     except:
         return ({"Error": "Contractor not found in the database"})
@@ -156,7 +156,7 @@ def edit_contractor (id):
     db.session.add(contractor)
     db.session.commit()
 
-    return contractor.to_dict(),200
+    return contractor.to_dict(),204
 
 # -- Reviews section -- #
 @app.get(URL_PREFIX + "/reviews-section")
@@ -168,7 +168,7 @@ def get_reviews ():
 
 @app.get(URL_PREFIX + "/review/<int:id>")
 def get_review_id (id):
-    review = Review.query.filter(Review.id == id)
+    review = Review.query.filter(Review.id == id).first()
     return jsonify(review.to_dict()),200
 
 @app.post(URL_PREFIX + "/new-review")
@@ -191,7 +191,7 @@ def edit_review (id):
     db.session.add(review)
     db.session.commit()
 
-    return review.to_dict(),200
+    return review.to_dict(),204
 
 @app.get(URL_PREFIX + "/posts-section")
 def get_posts ():
@@ -200,6 +200,43 @@ def get_posts ():
     
     return jsonify(response), 200
 
+@app.get(URL_PREFIX + "/post/<int:id>")
+def get_post_id (id):
+    post = Post.query.filter(Post.id == id).first()
+    return jsonify(post.to_dict()),200
+
+@app.post(URL_PREFIX + "/new-post")
+def create_post ():
+    data = request.json
+    print(data)
+    new_post = Post(**data)
+
+    db.session.add(new_post)
+    db.session.commit()
+
+    return new_post.to_dict(),201
+
+@app.patch(URL_PREFIX + "/edit-post/<int:id>")
+def edit_post (id):
+    data = request.json()
+    Post.query.filter(Post.id == id).update(data)
+    post = Post.query.filter(Post.id == id).first()
+
+    db.session.add(post)
+    db.session.commit()
+
+    return post.to_dict(),204
+
+#  -- Post section -- #
+@app.delete(URL_PREFIX + "/delete/post/<int:id>")
+def delete_post (id):
+    post = Post.query.filter(Post.id == id).first()
+
+    db.session.delete(post)
+    db.session.commit()
+
+    return {},204
+
 """@app.get(URL_PREFIX + "/likes-section")
 def get_likes ():
     "<h4>LIKES route</h4>"
@@ -207,6 +244,8 @@ def get_likes ():
     response = [like.to_dict() for like in likes]
     return jsonify(response), 200"""
 
+
+# -- Comments section -- #
 @app.get(URL_PREFIX + "/comments/info")
 def get_comments ():
     "<h4>COMMENTS route</h4>"
@@ -216,7 +255,7 @@ def get_comments ():
 
 @app.get(URL_PREFIX + "/comment/info/<int:id>")
 def get_comment_id (id):
-    comment = Comment.query.filter(Comment.id == id)
+    comment = Comment.query.filter(Comment.id == id).first()
     return jsonify(comment.to_dict()),200
 
 @app.post(URL_PREFIX + "/create-comment")
@@ -240,6 +279,15 @@ def edit_comment (id):
         db.session.commit()
 
         return comment.to_dict(),200
+
+@app.delete(URL_PREFIX + "/delete/comment/<int:id>")
+def delete_comment (id):
+    comment = Comment.query.filter(Comment.id == id).first()
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    return {},204
 
 """@app.get(URL_PREFIX + "/saved-post/")
 def  get_posts ():
