@@ -69,7 +69,7 @@ class Contractor(db.Model, SerializerMixin):
 
     post = db.relationship("Post", back_populates="contractor")
 
-    serialize_rules = ("-user",)
+    serialize_rules = ("-user", "-post",)
 
 #----- Reviews -----#
 class Review(db.Model, SerializerMixin):
@@ -91,7 +91,7 @@ class Review(db.Model, SerializerMixin):
 class Post(db.Model, SerializerMixin):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    # image = db.Column(db.String, nullable=False)
+    image = db.Column(db.String, nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     contractor_id = db.Column(db.Integer, db.ForeignKey("contractors.id"))
@@ -104,7 +104,7 @@ class Post(db.Model, SerializerMixin):
 
     comment_text = association_proxy("comments", "body")
 
-    serialize_rules = ("-user.posts", "-comments.post")
+    serialize_rules = ("-user.posts", "-comments.post", "-contractor.post", "-likes")
 
 #----- Likes -----#
 class Like(db.Model, SerializerMixin):
@@ -133,7 +133,7 @@ class Comment(db.Model, SerializerMixin):
     user = db.relationship("User", back_populates="comments")
     post = db.relationship("Post", back_populates="comments")
 
-    serialize_rules = ("-user.comments", "-post.comments")
+    serialize_rules = ("-user", "-post")
 
 #----- Saved -----#
 class Saved_Post(db.Model, SerializerMixin):
