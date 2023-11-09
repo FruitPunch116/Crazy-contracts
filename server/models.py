@@ -15,142 +15,133 @@ db = SQLAlchemy(metadata = metadata)
 
 
 
-#-----  Users  -----#
-class User ( db.Model, SerializerMixin ) :
+#----- Users -----#
+class User(db.Model, SerializerMixin):
     __tablename__ = "users"
-    # Create table columns
-    id = db.Column (db.Integer, primary_key = True, unique = True)
-    name = db.Column (db.String, nullable = False)
-    last_name = db.Column (db.String, nullable = False)
-    e_mail = db.Column (db.String, nullable = False)
-    password = db.Column (db.String, nullable = False)
-    zip_code = db.Column (db.Integer, nullable = False)
 
-    # Establish one-to-one relationship with the contractors
-    contractor = db.relationship ("Contractor", back_populates = "user")
-    # Establish many-to-many relationship with the review table
-    # reviews_transmitted = db.relationship ("Review", back_populates = "transmitter")
-    # reviews_received = db.relationship ("Review", back_populates = "receptor")
-    # Establish one-to-many relationship with the post table
-    posts = db.relationship ("Post", back_populates = "user")
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    name = db.Column(db.String, nullable=False)
+    last_name = db.Column(db.String, nullable=False)
+    e_mail = db.Column(db.String, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    zip_code = db.Column(db.Integer, nullable=False)
 
-    # comments = db.relationship ("Comment", back_populates = "user")
-    # 
-    # saved_post = db.relationship ("Saved_Post", back_populates = "user")
+    contractor = db.relationship("Contractor", back_populates="user")
 
-    # Create the association between the reviews and the contractors thru users 
-    reviews_transmitted_text = association_proxy ("reviews_transmitted", "text")
-    reviews_transmitted_stars = association_proxy ("reviews_transmitted", "stars")
-    reviews_received_text = association_proxy ("reviews_received", "text")
-    reviews_received_stars = association_proxy ("reviews_received", "stars")
+    reviews_transmitted = db.relationship("Review", foreign_keys="Review.transmitter_id", back_populates="transmitter")
+    reviews_received = db.relationship("Review", foreign_keys="Review.receptor_id", back_populates="receptor")
 
-    serialize_rules = ("-reviews_transmitted.transmitter", "-reviews_received.receptor", "-contractors.user", "-posts.user", "-comments.user",)
+    posts = db.relationship("Post", back_populates="user")
 
-#-----  Contractors  -----#
-class Contractor ( db.Model, SerializerMixin ) :
-    # Gives the table a name
+    likes = db.relationship("Like", back_populates="user")
+
+    comments = db.relationship("Comment", back_populates="user")
+
+    saved_post = db.relationship("Saved_Post", back_populates="user")
+
+    reviews_transmitted_text = association_proxy("reviews_transmitted", "text")
+    reviews_transmitted_stars = association_proxy("reviews_transmitted", "stars")
+    reviews_received_text = association_proxy("reviews_received", "text")
+    reviews_received_stars = association_proxy("reviews_received", "stars")
+
+    serialize_rules = (
+        "-reviews_transmitted.transmitter",
+        "-reviews_received.receptor",
+        "-contractor.user",
+        "-posts.user",
+        "-comments.user",
+    )
+
+#----- Contractors -----#
+class Contractor(db.Model, SerializerMixin):
+
     __tablename__ = "contractors"
-    # Create table columns
-    id = db.Column (db.Integer, primary_key = True, unique = True)
-    company_name = db.Column (db.String, nullable = False)
-    address = db.Column (db.String)
-    secondary_address = db.Column (db.String)
-    specialty = db.Column (db.String)
-    skills = db.Column (db.String, nullable = False)
-    age = db.Column (db.Integer, nullable = False)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    company_name = db.Column(db.String, nullable=False)
+    address = db.Column(db.String)
+    secondary_address = db.Column(db.String)
+    specialty = db.Column(db.String)
+    skills = db.Column(db.String, nullable=False)
+    age = db.Column(db.Integer, nullable=False)
 
-    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"), unique = True)
-    # Establish one-to-one relationship with the users table
-    user = db.relationship ("User", back_populates = "contractor")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True)
+    user = db.relationship("User", back_populates="contractor")
 
-    # post = db.relationship ("Post", back_populates = "contractor")
+    post = db.relationship("Post", back_populates="contractor")
 
     serialize_rules = ("-user.contractor",)
 
-"""#-----  Reviews  -----#
-class Review ( db.Model ) :
-    # Gives the table a name
+#----- Reviews -----#
+class Review(db.Model, SerializerMixin):
     __tablename__ = "reviews"
-    # Create table columns
-    id = db.Column (db.Integer, primary_key = True, unique = True)
-    stars = db.Column (db.Integer, nullable = False)
-    text = db.Column (db.String, nullable = False)
 
-    transmitter_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
-    receptor_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    stars = db.Column(db.Integer, nullable=False)
+    text = db.Column(db.String, nullable=False)
 
-    # Establish many-to-many relationship with the user table
-    transmitter = db.relationship ("User", back_populates = "reviews_transmitted")
-    receptor = db.relationship ("User", back_populates="reviews_received")
+    transmitter_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    receptor_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    serialize_rules = ("-transmitter.reviews_transmitted", "-receptor.reviews_received",)"""
-    
-#-----  Posts  -----#
-class Post ( db.Model, SerializerMixin ) :
-    # Gives the table a name
+    transmitter = db.relationship("User", back_populates="reviews_transmitted", foreign_keys=[transmitter_id])
+    receptor = db.relationship("User", back_populates="reviews_received", foreign_keys=[receptor_id])
+
+    serialize_rules = ("-transmitter.reviews_transmitted", "-receptor.reviews_received",)
+
+#----- Posts -----#
+class Post(db.Model, SerializerMixin):
     __tablename__ = "posts"
-    id = db.Column (db.Integer, primary_key = True, unique = True)
-    # image = db.Column (db.String, nullable = False)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    # image = db.Column(db.String, nullable=False)
 
-    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
-    # contractor_id = db.Column (db.Integer, db.ForeignKey ("contractors.id"))
-    # likes_id = db.Column (db.Integer, db.ForeignKey ("likes.id"))
-    
-    # Establish many-to-one relationship with the user table
-    user = db.relationship ("User", back_populates = "posts")
-    # Establish relationship with the comment table
-    # comments = db.relationship ("Comment", back_populates = "post")
-    # Establish relationship with the like table
-    # likes =  db.relationship ("Like", back_populates = "post")
-    # Establish relationship with the saved table
-    # saved_post = db.relationship ("Saved_Post", back_populates = "posts")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    contractor_id = db.Column(db.Integer, db.ForeignKey("contractors.id"))
 
-    #
-    # comment_text = association_proxy ("comments", "text")
+    user = db.relationship("User", back_populates="posts")
+    contractor = db.relationship("Contractor", back_populates="post")
 
-    serialize_rules = ("-user.posts", "-comments.post",)
+    comments = db.relationship("Comment", back_populates="post")
+    likes = db.relationship("Like", back_populates="post")
 
-"""
-#-----  Likes  -----#
-class Like ( db.Model ) :
-    # Gives the table a name
+    comment_text = association_proxy("comments", "body")
+
+    serialize_rules = ("-user.posts", "-comments.post")
+
+#----- Likes -----#
+class Like(db.Model, SerializerMixin):
+
     __tablename__ = "likes"
-    # Create table columns
-    id = db.Column (db.Integer, primary_key = True)
 
-    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
-    post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
+    id = db.Column(db.Integer, primary_key=True)
 
-    user = db.relationship ("User", back_populates = "likes")
-    # post = db.relationship ("Post", back_populates = "likes")"""
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
 
-"""
-#-----  Comments  -----#
-class Comment ( db.Model ) :
-    # Gives the table a name
+    user = db.relationship("User", back_populates="likes")
+    post = db.relationship("Post", back_populates="likes")
+
+#----- Comments -----#
+class Comment(db.Model, SerializerMixin):
+
     __tablename__ = "comments"
-    # Create table columns
-    id = db.Column (db.Integer, primary_key = True, unique = True)
-    body = db.Column (db.String)
-    
-    post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
-    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
 
-    user = db.relationship ("User", back_populates = "comments")
-    post = db.relationship ("Post", back_populates = "comments")
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    body = db.Column(db.String)
 
-    serialize_rules = ("-user.comments", "-post.comments",)"""
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-"""
-#-----  Saved  -----#
-class Saved_Post ( db.Model ) :
-    # Gives the table a name
+    user = db.relationship("User", back_populates="comments")
+    post = db.relationship("Post", back_populates="comments")
+
+    serialize_rules = ("-user.comments", "-post.comments")
+
+#----- Saved -----#
+class Saved_Post(db.Model, SerializerMixin):
+
     __tablename__ = "saved"
-    # Create table columns
-    id = db.Column (db.Integer, primary_key = True, unique = True)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
 
-    user_id = db.Column (db.Integer, db.ForeignKey ("users.id"))
-    post_id = db.Column (db.Integer, db.ForeignKey ("posts.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
 
-    user = db.relationship ("User", back_populates = "saved_post")
-    # posts = db.relationship ("Post", back_populates = "saved_post")"""
+    user = db.relationship("User", back_populates="saved_post")
