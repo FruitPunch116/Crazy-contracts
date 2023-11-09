@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from models import db, User, Contractor, Post, Review
+from models import db, User, Contractor, Post, Review, Comment
 
 from flask import Flask, jsonify, request, session
 from flask_cors import CORS
@@ -176,10 +176,11 @@ def create_review ():
     data = request.json
     print(data)
     new_review = Review(**data)
+
     db.session.add(new_review)
     db.session.commit()
 
-    return new_review.to_dict()
+    return new_review.to_dict(), 201
 
 @app.patch(URL_PREFIX + "/edit-review/<int:id>")
 def edit_review (id):
@@ -206,13 +207,39 @@ def get_likes ():
     response = [like.to_dict() for like in likes]
     return jsonify(response), 200"""
 
-"""@app.get(URL_PREFIX + "/comments/info")
+@app.get(URL_PREFIX + "/comments/info")
 def get_comments ():
     "<h4>COMMENTS route</h4>"
     comments = Comment.query.all()
     response = [comment.to_dict() for comment in comments]
-    return jsonify(response), 200"""
+    return jsonify(response), 200
 
+@app.get(URL_PREFIX + "/comment/info/<int:id>")
+def get_comment_id (id):
+    comment = Comment.query.filter(Comment.id == id)
+    return jsonify(comment.to_dict()),200
+
+@app.post(URL_PREFIX + "/create-comment")
+def create_comment ():
+    data = request.json
+    print(data)
+    new_comment = Comment(**data)
+    
+    db.session.add(new_comment)
+    db.session.commit()
+
+    return new_comment.to_dict(),201
+
+@app.patch(URL_PREFIX + "/edit-comment/<int:id>")
+def edit_comment (id):
+        data = request.json
+        Comment.query.filter(Comment.id == id).update(data)
+        comment = Comment.query.filter(Comment.id == id).first()
+
+        db.session.add(comment)
+        db.session.commit()
+
+        return comment.to_dict(),200
 
 """@app.get(URL_PREFIX + "/saved-post/")
 def  get_posts ():
