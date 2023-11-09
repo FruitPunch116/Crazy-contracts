@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 
-from models import db, User, Contractor, Post
+from models import db, User, Contractor, Post, Review
 
 from flask import Flask, jsonify, request, session
-# from flask_cors import CORS
+from flask_cors import CORS
 from flask_migrate import Migrate
-# from flask_bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 app.secret_key = b'm~\xb6E6\x8b\xe9\xf0\x9d\xa7\x81\x8b\x91&aC\xc1\x7f\xe1\x11\xecn\xeeW\xa1\xf6vT\x96\xb9N\x0b'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
+
+cors = CORS(app, resources={r"/api/*/admin": {"origins": "*"}})
+
+bcrypt = Bcrypt(app)
 
 migrate = Migrate (app, db)
 
@@ -31,15 +35,17 @@ def index ():
     <br>
     <h1>Here are some of the endpoints that you can use to get information from the different routes</h1>
     <h2>Getting the users overall info:</h2>
-    <h3>http://localhost:8001{URL_PREFIX}/users</h3>
-    <h2>Getting a specific  information:</h2>
-    <h3>http://localhost:8001/{URL_PREFIX}/users/<int></h3>
+    <a href="http://localhost:8001{URL_PREFIX}/users">http://localhost:8001{URL_PREFIX}/users</a>
+    <h2>Getting a specific user information:</h2>
+    <a href="http://localhost:8001{URL_PREFIX}/user/5">http://localhost:8001{URL_PREFIX}/user/<int:id></a>
     <h2>Getting the contractors overall info:</h2>
-    <h3>http://localhost:8001{URL_PREFIX}/contractors/info</h3>
+    <a href="http://localhost:8001{URL_PREFIX}/contractors/info">http://localhost:8001{URL_PREFIX}/contractors/info</a>
     <h2>Getting a specific contractor information:</h2>
-    <h3>http://localhost:8001/{URL_PREFIX}/contractors/info/<int></h3>
+    <a href="http://localhost:8001{URL_PREFIX}/contractors/info/1">http://localhost:8001/{URL_PREFIX}/contractors/info/<int:id></a>
     """
     return page
+
+# -- User section -- #
 
 @app.get(URL_PREFIX + "/users")
 def get_users ():
@@ -48,6 +54,74 @@ def get_users ():
 
     return jsonify(response), 200
 
+@app.get(URL_PREFIX + "/user/<int:id>")
+def get_user_id (id):
+    try:
+        user = User.query.filter(User.id == id).first()
+        return jsonify(user.to_dict()), 200
+    except:
+        return ({"error": "User not found"}), 404
+
+@app.post (URL_PREFIX + "/new-user")
+def create_user ():
+    """data = request.json
+    new_user = User(**data)
+    db.session.add(new_user)
+    db.session.commit()
+    # print(data)
+    return new_user.to_dict(), 201"""
+
+    try:
+        data = request.json
+        print(data)
+        password_hash = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+        new_user = User(
+            name=data['name'],
+            last_name=data["last_name"],
+            e_mail=data["e_mail"],
+            password=password_hash,
+            zip_code=data["zip_code"]
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        session["user_id"] = new_user.id
+
+        return new_user.to_dict(), 201
+    except Exception as e:
+        return { 'error': str(e) }, 406
+
+@app.delete(URL_PREFIX + "/user-delete/<int:id>")
+def delete_user (id):
+    user = User.query.filter(User.id == id).first()
+
+    for contractor in user.contractor:
+        db.session.delete(contractor)
+
+    for post in user.posts:
+        db.session.delete(post)
+
+    for comment in user.comments:
+        db.session.delete(comment)
+
+    db.session.delete(user)
+    db.session.commit()
+    return {}, 204 
+
+@app.patch(URL_PREFIX + "/user-edit/<int:id>")
+def edit_user(id):
+    data = request.json
+    print(data)
+    User.query.filter(User.id == id).update(data)
+    user = User.query.filter(User.id == id).first()
+    
+    db.session.add(user)
+    db.session.commit()
+    
+    return user.to_dict(),200
+
+#  -- Contractors section -- #
+
 @app.get(URL_PREFIX + "/contractors/info")
 def get_contractors ():
     contractors = Contractor.query.all()
@@ -55,13 +129,68 @@ def get_contractors ():
     
     return jsonify(response), 200
 
-"""    
+@app.get(URL_PREFIX + "/contractor/info/<int:id>")
+def get_contractor_id (id):
+    try:
+        contractor = Contractor.query.filter(Contractor.id == id)
+        return jsonify(contractor.to_dict()), 200
+    except:
+        return ({"Error": "Contractor not found in the database"})
+   
+@app.post(URL_PREFIX + "/new-contractor")
+def create_contractor ():
+    data = request.json
+    print(data)
+    new_contractor = Contractor(**data)
+    db.session.add(new_contractor)
+    db.session.commit()
+    return new_contractor.to_dict(), 201
+
+@app.patch(URL_PREFIX + "/contractor/info/edit/<int:id>")
+def edit_contractor (id):
+    data = request.json
+    print(data)
+    Contractor.query.filter(Contractor.id == id).update(data)
+    contractor = Contractor.query.filter(Contractor.id == id).first()
+
+    db.session.add(contractor)
+    db.session.commit()
+
+    return contractor.to_dict(),200
+
+# -- Reviews section -- #
 @app.get(URL_PREFIX + "/reviews-section")
 def get_reviews ():
     "<h4>REVIEWS route</h4>"
     reviews = Review.query.all()
     response = [review.to_dict() for review in reviews]
-    return jsonify(response), 200"""
+    return jsonify(response), 200
+
+@app.get(URL_PREFIX + "/review/<int:id>")
+def get_review_id (id):
+    review = Review.query.filter(Review.id == id)
+    return jsonify(review.to_dict()),200
+
+@app.post(URL_PREFIX + "/new-review")
+def create_review ():
+    data = request.json
+    print(data)
+    new_review = Review(**data)
+    db.session.add(new_review)
+    db.session.commit()
+
+    return new_review.to_dict()
+
+@app.patch(URL_PREFIX + "/edit-review/<int:id>")
+def edit_review (id):
+    data = request.json
+    Review.query.filter(Review.id == id).update(data)
+    review = Review.query.filter(Review.id == id).first()
+
+    db.session.add(review)
+    db.session.commit()
+
+    return review.to_dict(),200
 
 @app.get(URL_PREFIX + "/posts-section")
 def get_posts ():
@@ -90,44 +219,8 @@ def  get_posts ():
     "<h4SAVED POSTS route></h4>"
     posts = Post.query.all()
     response = [post.to_dict() for post in posts]
-    return jsonify(response), 200"""
-
-@app.get(URL_PREFIX + "/user/<int:id>")
-def get_user_id (id):
-    try:
-        user = User.query.filter(User.id == id).first()
-        return jsonify(user.to_dict()), 200
-    except:
-        return ({"error": "Episode not found"}), 404
-
-@app.post (URL_PREFIX + "/new-user")
-def create_user ():
-    data = request.json
-    new_user = User(**data)
-    db.session.add(new_user)
-    db.session.commit()
-    print(data)
-    return new_user.to_dict(), 201
-
-@app.delete(URL_PREFIX + "/users/<int:id>")
-def delete_user (id):
-    user = User.query.filter(User.id == id).first()
-    db.session.delete(user)
-    db.session.commit()
-    return {}, 204    
+    return jsonify(response), 200"""   
     
-@app.patch(URL_PREFIX + "/user-edit/<int:id>")
-def edit_user(id):
-    data = request.json
-    print(data)
-    User.query.filter(User.id == id).update(data)
-    user = User.query.filter(User.id == id).first()
-    
-    db.session.add(user)
-    db.session.commit()
-    
-    return user.to_dict(),200
-
 """
 creating serialize rules for the route (what to show on the browser when the API load)
 # self.to_dict(rules=("-contractor.address",))
