@@ -69,7 +69,7 @@ class Contractor(db.Model, SerializerMixin):
 
     post = db.relationship("Post", back_populates="contractor")
 
-    serialize_rules = ("-user.contractor",)
+    serialize_rules = ("-user",)
 
 #----- Reviews -----#
 class Review(db.Model, SerializerMixin):
@@ -85,7 +85,7 @@ class Review(db.Model, SerializerMixin):
     transmitter = db.relationship("User", back_populates="reviews_transmitted", foreign_keys=[transmitter_id])
     receptor = db.relationship("User", back_populates="reviews_received", foreign_keys=[receptor_id])
 
-    serialize_rules = ("-transmitter.reviews_transmitted", "-receptor.reviews_received",)
+    serialize_rules = ("-transmitter", "-receptor",)
 
 #----- Posts -----#
 class Post(db.Model, SerializerMixin):
